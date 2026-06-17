@@ -1,28 +1,43 @@
 <?php
-// Memanggil abstract class induk
 require_once 'Tiket.php';
 
 class TiketReguler extends Tiket {
-    // Properti tambahan terenkapsulasi (private) sesuai gambar Tahap 4
     private $tipeAudio;
     private $lokasiBaris;
 
-    // Constructor untuk memetakan data induk dan data spesifik reguler
     public function __construct($id_tiket, $nama_film, $jadwal_tayang, $jumlah_kursi, $harga_dasar_tiket, $tipeAudio, $lokasiBaris) {
-        // Melempar parameter utama ke constructor abstract class Tiket
         parent::__construct($id_tiket, $nama_film, $jadwal_tayang, $jumlah_kursi, $harga_dasar_tiket);
         $this->tipeAudio = $tipeAudio;
         $this->lokasiBaris = $lokasiBaris;
     }
 
-    // Overriding: Implementasi hitung harga untuk kelas Reguler
+    // OVERRIDING POLIMORFISME: Tarif standar tanpa biaya tambahan
     public function HitungTotalHarga() {
-        return $this->harga_dasar_tiket * $this->jumlah_kursi;
+        return $this->jumlah_kursi * $this->harga_dasar_tiket;
     }
 
-    // Overriding: Implementasi menampilkan fasilitas reguler
     public function tampilkanInfoFasilitas() {
         return "Audio: " . $this->tipeAudio . " | Baris: " . $this->lokasiBaris;
+    }
+
+    /**
+     * Fungsi Statis untuk mengambil data spesifik studio reguler menggunakan SELECT WHERE
+     */
+    public static function ambilDataReguler($conn) {
+        $sql = "SELECT * FROM tabel_tiket WHERE jenis_studio = 'reguler'";
+        $result = $conn->query($sql);
+        
+        $daftarObjek = [];
+        if ($result && $result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $daftarObjek[] = new self(
+                    $row['id_tiket'], $row['nama_film'], $row['jadwal_tayang'], 
+                    $row['jumlah_kursi'], $row['harga_dasar_tiket'],
+                    $row['tipe_audio'], $row['lokasi_baris']
+                );
+            }
+        }
+        return $daftarObjek;
     }
 }
 ?>
